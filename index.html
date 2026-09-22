@@ -70,7 +70,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 <div class="card"><h2>交換できるもの</h2><div id="exchangeList"></div></div>
 </section>
 
-<div class="card footer">予約情報・交換情報はこの端末のブラウザ（localStorage）に保存します。GitHub Pagesに公開しても、他の人とデータ共有はされません。</div>
+<div class="card footer">予約情報・交換情報はこの端末のブラウザ（localStorage）に保存します。他の人とデータ共有はされません。</div>
 </main>
 
 <script>
@@ -658,6 +658,10 @@ $("favorite").onchange=()=>{
   renderExchange();
 };
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");render()});
+ // 最初に開いたときは「予約登録」だけ表示
+document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));
+$("reserve").classList.remove("hidden");
+ 
 localStorage.setItem("aeEmotionReservations",JSON.stringify(data));
 localStorage.setItem("aeEmotionExchange",JSON.stringify(exchange));
 localStorage.setItem("aeEmotionExchangeRecords",JSON.stringify(exchangeRecords));
