@@ -249,8 +249,9 @@ function renderResult(){
  const b=bonusCounts();
  $("bonusSummary").innerHTML=[["フォトプロップス",b.フォトプロップス],["ハブラシ",b.ハブラシ],["ラバーバンド",b.ラバーバンド],["ユニットトレカA",b.ユニットA],["ユニットトレカB",b.ユニットB],["ユニットトレカC",b.ユニットC],["早期フレークシール",data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0)]].map(x=>`<div class="item"><div>${x[0]}</div><div class="qty">×${x[1]}</div></div>`).join("");
 
+ const earlyStickerQty=data.filter(x=>x.early).reduce((n,x)=>n+Number(x.qty||0),0);
  let hEarly="";
- if(b.早期フレークシール<=0) hEarly=`<div class="alert warn">🩷 <b>早期フレークシール</b> が足りないよ！</div>`;
+ if(earlyStickerQty<=0) hEarly=`<div class="alert warn">🩷 <b>早期フレークシール</b> が足りないよ！</div>`;
  const tracks=trackCounts();
  const need=["Emotion","この朝は","X'mas FAM!","White Love Story","Mrs.Vampire","Aッ!!!!!!!"];
  let h=hEarly;
@@ -327,7 +328,7 @@ function exchangeRows(type,candidates,available){
   const used=exchangedQty(key), remain=remainingQty(key,max);
   const records=recordsFor(key);
   h+=`<div class="exchange-row">
-   <div class="exchange-main"><div><b>${esc(m)}</b><div class="exchange-meta">交換対象：${max}枚 ／ 交換済み：${used}枚</div></div><div class="qty remaining">残り${remain}枚</div></div>
+   <div class="exchange-main"><div><b>${esc(m)}</b><div class="exchange-meta">交換対象：${max}枚 ／ 交換済み：${used}枚</div></div><div class="qty ${remain>0?"remaining":""}">残り${remain}枚</div></div>
    <div class="record-form">
     <input id="qty_${escId(key)}" type="number" min="1" max="${remain}" value="${remain>0?1:0}" placeholder="枚数" ${remain===0?"disabled":""}>
     <input id="partner_${escId(key)}" placeholder="交換相手" ${remain===0?"disabled":""}>
@@ -384,7 +385,7 @@ function renderExchange(){
   h+=`<div class="exchange-box"><div class="exchange-title">${unitTitle}</div><div class="exchange-body">
    <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
    <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
-   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b class="remaining">${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
+   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b class="${(otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0)>0?"remaining":""}">${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
    ${otherPair?exchangeRows("unit"+u,[otherPair.join("＆")],{[otherPair.join("＆")]:available}):""}
   </div></div>`;
  });
