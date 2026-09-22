@@ -432,10 +432,14 @@ h+=`<div class="exchange-box">
  $("exchangeList").innerHTML=h;
 
 $("exchangeList").insertAdjacentHTML("beforeend",`
-  <div class="actions" style="margin-top:16px;">
+  <div class="actions" style="margin-top:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
     <button class="btn primary" onclick="saveExchangeImage()">
       📸 交換残数を画像で保存
     </button>
+
+    <span style="font-size:13px; color:#666;">
+      ※交換残数に変更があった場合は、もう一度ボタンを押して画像を最新の状態に更新してください。
+    </span>
   </div>
 `);
 }
