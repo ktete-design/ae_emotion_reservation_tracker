@@ -18,7 +18,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 .alert{padding:11px 12px;border-radius:9px;background:#fff3f6;border-left:4px solid var(--pink);font-size:13px;margin:7px 0}.alert.ok{background:#f0faf3;border-left-color:#79aa8b}.alert.warn{background:#fff8ed;border-left-color:#e1a14a}
 .person-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}@media(max-width:520px){.person-grid{grid-template-columns:repeat(2,1fr)}}.person{background:#fff8fa;border:1px solid var(--line);border-radius:11px;padding:9px;text-align:center}.person b{display:block;font-size:16px}.person span{font-size:11px;color:var(--muted)}
 .exchange-box{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden}.exchange-title{background:var(--light);padding:10px 12px;font-weight:800}.exchange-body{padding:10px 12px}
-.exchange-row{border-top:1px solid #f0e2e6;padding:10px 0}.exchange-row:first-child{border-top:0}.exchange-main{display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center}.exchange-meta{font-size:12px;color:var(--muted)}.exchange-controls{display:grid;grid-template-columns:90px 1fr;gap:7px;margin-top:7px}.exchange-record{background:#fff8fa;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px}.exchange-record-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.exchange-records{margin-top:8px}.exchange-summary{background:#fff0f5;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}.exchange-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.exchange-summary .stat{background:#fff}.record-form{display:grid;grid-template-columns:80px 1fr;gap:7px;margin-top:8px}.record-form .full{grid-column:1/-1}.record-form button{grid-column:1/-1}
+.exchange-row{border-top:1px solid #f0e2e6;padding:10px 0}.exchange-row:first-child{border-top:0}.exchange-main{display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center}.remaining{color:#d32f2f!important;font-weight:800}.exchange-meta{font-size:12px;color:var(--muted)}.exchange-controls{display:grid;grid-template-columns:90px 1fr;gap:7px;margin-top:7px}.exchange-record{background:#fff8fa;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px}.exchange-record-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.exchange-records{margin-top:8px}.exchange-summary{background:#fff0f5;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}.exchange-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.exchange-summary .stat{background:#fff}.record-form{display:grid;grid-template-columns:80px 1fr;gap:7px;margin-top:8px}.record-form .full{grid-column:1/-1}.record-form button{grid-column:1/-1}
 .danger{background:#fff0f0;color:#a94452;border:0;border-radius:7px;padding:5px 7px}.hidden{display:none}.footer{font-size:11px;color:var(--muted);line-height:1.6}
 .early{display:flex;gap:8px;align-items:center;background:#fff7fa;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:10px;font-size:13px}
 .price{font-size:12px;color:var(--deep);font-weight:700;margin-top:5px}
@@ -248,9 +248,12 @@ function renderResult(){
  : `<div class="small">予約を追加してください。</div>`;
  const b=bonusCounts();
  $("bonusSummary").innerHTML=[["フォトプロップス",b.フォトプロップス],["ハブラシ",b.ハブラシ],["ラバーバンド",b.ラバーバンド],["ユニットトレカA",b.ユニットA],["ユニットトレカB",b.ユニットB],["ユニットトレカC",b.ユニットC],["早期フレークシール",data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0)]].map(x=>`<div class="item"><div>${x[0]}</div><div class="qty">×${x[1]}</div></div>`).join("");
+
+ let hEarly="";
+ if(b.早期フレークシール<=0) hEarly=`<div class="alert warn">🩷 <b>早期フレークシール</b> が足りないよ！</div>`;
  const tracks=trackCounts();
  const need=["Emotion","この朝は","X'mas FAM!","White Love Story","Mrs.Vampire","Aッ!!!!!!!"];
- let h="";
+ let h=hEarly;
  need.forEach(t=>{
    if(!tracks[t]) h+=`<div class="alert warn">🎵 <b>${esc(t)}</b> が聴けないよ！</div>`;
  });
@@ -324,7 +327,7 @@ function exchangeRows(type,candidates,available){
   const used=exchangedQty(key), remain=remainingQty(key,max);
   const records=recordsFor(key);
   h+=`<div class="exchange-row">
-   <div class="exchange-main"><div><b>${esc(m)}</b><div class="exchange-meta">交換対象：${max}枚 ／ 交換済み：${used}枚</div></div><div class="qty">残り${remain}枚</div></div>
+   <div class="exchange-main"><div><b>${esc(m)}</b><div class="exchange-meta">交換対象：${max}枚 ／ 交換済み：${used}枚</div></div><div class="qty remaining">残り${remain}枚</div></div>
    <div class="record-form">
     <input id="qty_${escId(key)}" type="number" min="1" max="${remain}" value="${remain>0?1:0}" placeholder="枚数" ${remain===0?"disabled":""}>
     <input id="partner_${escId(key)}" placeholder="交換相手" ${remain===0?"disabled":""}>
@@ -377,10 +380,11 @@ function renderExchange(){
  ["A","B","C"].forEach(u=>{
   const pair=units[u].find(p=>p.includes(fav));const otherPair=units[u].find(p=>!p.includes(fav));
   const available=otherPair?Math.min(...otherPair.map(m=>s[m].units[u])):0;
-  h+=`<div class="exchange-box"><div class="exchange-title">👬 ユニットトレカ${u}</div><div class="exchange-body">
+  const unitTitle={A:"👬 通常盤 ユニットトレカA （末澤誠也＆小島健 ／ 佐野晶哉＆正門良規）",B:"👬 通常盤 ユニットトレカB （末澤誠也＆佐野晶哉 ／ 小島健＆正門良規）",C:"👬 通常盤 ユニットトレカC （末澤誠也＆正門良規 ／ 小島健＆佐野晶哉）"}[u];
+  h+=`<div class="exchange-box"><div class="exchange-title">${unitTitle}</div><div class="exchange-body">
    <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
    <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
-   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b>${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
+   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b class="remaining">${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
    ${otherPair?exchangeRows("unit"+u,[otherPair.join("＆")],{[otherPair.join("＆")]:available}):""}
   </div></div>`;
  });
