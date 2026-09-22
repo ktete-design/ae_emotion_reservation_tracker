@@ -227,7 +227,7 @@ function memberStock(){
   // A盤のフォトプロップスは、早期予約特典対象なら付きません。
   if(x.form==="A" && !x.early)members.forEach(m=>c[m].photo+=x.qty);
   if(x.early)members.forEach(m=>c[m].sticker+=x.qty);
-  if(x.form==="REG"&&units[x.unit]){
+  if(x.form==="REG" && !x.early && units[x.unit]){
    units[x.unit].forEach(pair=>pair.forEach(m=>c[m].units[x.unit]+=x.qty));
   }
  });
