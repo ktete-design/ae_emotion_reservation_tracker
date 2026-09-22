@@ -279,7 +279,7 @@ function exchangeRows(type,candidates,available){
    <div class="exchange-main"><div><b>${esc(m)}</b><div class="exchange-meta">交換対象：${max}枚 ／ 交換済み：${used}枚</div></div><div class="qty">残り${remain}枚</div></div>
    <div class="record-form">
     <input id="qty_${escId(key)}" type="number" min="1" max="${remain}" value="${remain>0?1:0}" placeholder="枚数" ${remain===0?"disabled":""}>
-    <input id="partner_${escId(key)}" placeholder="交換相手（例：⭕️⭕️ちゃん）" ${remain===0?"disabled":""}>
+    <input id="partner_${escId(key)}" placeholder="交換相手" ${remain===0?"disabled":""}>
     <input id="datetime_${escId(key)}" type="datetime-local" value="${localDateTimeValue()}" ${remain===0?"disabled":""}>
     <input id="memo_${escId(key)}" class="full" placeholder="メモ（例：大阪公演で手渡し／郵送）" ${remain===0?"disabled":""}>
     <button class="btn secondary" onclick="addExchangeRecordFromUI('${escJs(key)}',${max})" ${remain===0?"disabled":""}>＋交換記録を追加</button>
@@ -329,7 +329,7 @@ function renderExchange(){
  ["A","B","C"].forEach(u=>{
   const pair=units[u].find(p=>p.includes(fav));const otherPair=units[u].find(p=>!p.includes(fav));
   const available=otherPair?Math.min(...otherPair.map(m=>s[m].units[u])):0;
-  h+=`<div class="exchange-box"><div class="exchange-title">🎴 ユニットトレカ${u}</div><div class="exchange-body">
+  h+=`<div class="exchange-box"><div class="exchange-title">👬 ユニットトレカ${u}</div><div class="exchange-body">
    <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
    <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>交換に出せる：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
    <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>交換に出せる残数：<b>${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
