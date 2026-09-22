@@ -65,7 +65,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 
 <section id="exchange" class="tab">
 <div class="card"><h2>自担を選択</h2><select id="favorite"></select>
-<div class="hint">交換対象は、①初回Aのフォトプロップス ②通常盤のコンビトレカ ③早期予約特典フレークシール。<br>1枚目はAちゃん、2枚目はBちゃん…のように、<strong>交換記録を何件でも追加</strong>できます。残数は自動計算されます。</div></div>
+<div class="hint">交換対象は、①初回Aのフォトプロップス ②通常盤のユニットトレカ ③早期予約特典フレークシール。<br>1枚目はAちゃん、2枚目はBちゃん…のように、<strong>交換記録を何件でも追加</strong>できます。残数は自動計算されます。</div></div>
 <div class="card"><h2>交換できるもの</h2><div id="exchangeList"></div></div>
 </section>
 
@@ -76,7 +76,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 const members=["末澤誠也","小島健","佐野晶哉","正門良規"];
 
 // 通常盤は1形態。購入先によって「ユニットA/B/C」が決まる。
-// 各ユニットトレカには2コンビ分が1枚ずつ、計2枚入る。
+// 各ユニットトレカには2ユニット分が1枚ずつ、計2枚入る。
 const regularShops=[
  {name:"HMV",unit:"A"},
  {name:"Amazon",unit:"A"},
@@ -374,7 +374,7 @@ function renderExchange(){
  others.forEach(m=>{const key="sticker|"+m;totalAvailable+=sticker;totalRemaining+=remainingQty(key,sticker)});
  h+=`<div class="exchange-summary"><b>🔄 交換残数</b><div class="exchange-summary-grid" style="margin-top:8px"><div class="stat"><b>${totalAvailable}</b><span>交換対象合計</span></div><div class="stat"><b>${totalAvailable-totalRemaining}</b><span>交換済み合計</span></div><div class="stat"><b>${totalRemaining}</b><span>残り合計</span></div></div></div>`;
  h+=`<div class="exchange-box"><div class="exchange-title">📸 初回A フォトプロップス</div><div class="exchange-body">
- <div class="small">初回A 1枚につき4人分。自担以外が交換対象。</div>
+ <div class="small">初回A 1枚につき、4人分が1セット。</div>
  <div class="person-grid" style="margin-top:8px">${members.map(m=>{const key="photo|"+m;const max=s[m].photo;return `<div class="person"><b>${remainingQty(key,max)}</b><span>${m}<br>残り</span></div>`}).join("")}</div>
  ${exchangeRows("photo",others,Object.fromEntries(others.map(m=>[m,s[m].photo])))}
  </div></div>`;
@@ -383,7 +383,7 @@ function renderExchange(){
   const available=otherPair?Math.min(...otherPair.map(m=>s[m].units[u])):0;
   const unitTitle={A:"👬 通常盤 ユニットトレカA （末澤誠也＆小島健 ／ 佐野晶哉＆正門良規）",B:"👬 通常盤 ユニットトレカB （末澤誠也＆佐野晶哉 ／ 小島健＆正門良規）",C:"👬 通常盤 ユニットトレカC （末澤誠也＆正門良規 ／ 小島健＆佐野晶哉）"}[u];
   h+=`<div class="exchange-box"><div class="exchange-title">${unitTitle}</div><div class="exchange-body">
-   <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
+   <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2ユニットが各1枚入り。</div>
    <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>残数：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
    <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b class="${(otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0)>0?"remaining":""}">${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
    ${otherPair?exchangeRows("unit"+u,[otherPair.join("＆")],{[otherPair.join("＆")]:available}):""}
