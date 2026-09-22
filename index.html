@@ -382,19 +382,7 @@ function renderExchange(){
  });
  const sticker=data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0);
  others.forEach(m=>{const key="sticker|"+m;totalAvailable+=sticker;totalRemaining+=remainingQty(key,sticker)});
-h+=`<div class="exchange-summary">
-  <b>🔄 交換残数</b>
-  <div class="exchange-summary-grid" style="margin-top:8px">
-    <div class="stat"><b>${totalAvailable}</b><span>交換対象合計</span></div>
-    <div class="stat"><b>${totalAvailable-totalRemaining}</b><span>交換済み合計</span></div>
-    <div class="stat"><b>${totalRemaining}</b><span>残り合計</span></div>
-  </div>
-  <div class="actions">
-    <button class="btn primary" onclick="saveExchangeImage()">
-      📸 交換残数を画像で保存
-    </button>
-  </div>
-</div>`;
+h+=`<div class="exchange-summary"><b>🔄 交換残数</b>
  h+=`<div class="exchange-box"><div class="exchange-title">📸 初回A フォトプロップス</div><div class="exchange-body">
  <div class="small">初回A 1枚につき、4人分が1セット。</div>
  <div class="person-grid" style="margin-top:8px">${members.map(m=>{const key="photo|"+m;const max=s[m].photo;return `<div class="person"><b>${remainingQty(key,max)}</b><span>${m}<br>残り</span></div>`}).join("")}</div>
@@ -417,7 +405,16 @@ h+=`<div class="exchange-summary">
  ${exchangeRows("sticker",others,Object.fromEntries(others.map(m=>[m,sticker])))}
  </div></div>`;
  $("exchangeList").innerHTML=h;
+
+$("exchangeList").insertAdjacentHTML("beforeend",`
+  <div class="actions" style="margin-top:16px;">
+    <button class="btn primary" onclick="saveExchangeImage()">
+      📸 交換残数を画像で保存
+    </button>
+  </div>
+`);
 }
+
 function saveExchangeImage(){
   const fav=$("favorite").value;
 
@@ -455,6 +452,7 @@ function saveExchangeImage(){
     const key="photo|"+m;
     const max=s[m].photo;
     const remain=remainingQty(key,max);
+
     if(remain>0){
       items.push({
         name:`フォトプロップス（${m}）`,
@@ -469,9 +467,11 @@ function saveExchangeImage(){
 
     if(otherPair){
       const label=otherPair.join("＆");
+
       const available=Math.min(
         ...otherPair.map(m=>s[m].units[u])
       );
+
       const key="unit"+u+"|"+label;
       const remain=remainingQty(key,available);
 
@@ -505,9 +505,10 @@ function saveExchangeImage(){
   const rowHeight=75;
   const headerHeight=190;
   const footerHeight=70;
+
   const height=Math.max(
     500,
-    headerHeight + items.length*rowHeight + footerHeight
+    headerHeight+items.length*rowHeight+footerHeight
   );
 
   const canvas=document.createElement("canvas");
@@ -528,12 +529,11 @@ function saveExchangeImage(){
   ctx.fillStyle=color.main;
   ctx.font="bold 38px sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(`私は${fav}担です`,width/2,75);
+  ctx.fillText(`${fav}担です`,width/2,75);
 
   ctx.font="bold 26px sans-serif";
-  ctx.fillText("交換に出せるもの",width/2,125);
+  ctx.fillText("交換希望",width/2,125);
 
-  // 枠
   let y=headerHeight;
 
   if(items.length===0){
@@ -579,20 +579,24 @@ function saveExchangeImage(){
     height-30
   );
 
-  // 画像を画面に表示
+  // 画像化
   const image=canvas.toDataURL("image/png");
 
+  // 以前の画像があれば削除
   const old=document.getElementById("exchangeSavedImage");
-  if(old) old.remove();
+  if(old)old.remove();
 
+  // 画像を表示
   const box=document.createElement("div");
   box.id="exchangeSavedImage";
   box.className="card";
+
   box.innerHTML=`
     <h2>📸 交換残数画像</h2>
     <div class="hint">
       画像を長押し・右クリックして保存できます。
     </div>
+
     <img
       src="${image}"
       style="
