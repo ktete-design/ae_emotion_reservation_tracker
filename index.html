@@ -65,7 +65,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 
 <section id="exchange" class="tab">
 <div class="card"><h2>自担を選択</h2><select id="favorite"></select>
-<div class="hint">交換対象は、①初回Aのフォトプロップス ②通常盤のユニットトレカ ③早期予約特典フレークシール。<br>1枚目はAちゃん、2枚目はBちゃん…のように、<strong>交換記録を何件でも追加</strong>できます。残数は自動計算されます。</div></div>
+<div class="hint">交換対象は、①初回Aのフォトプロップス ②通常盤のユニットトレカ ③早期予約特典フレークシール。<br><strong>交換記録を何件でも追加</strong>できます。残数は自動計算されます。</div></div>
 <div class="card"><h2>交換できるもの</h2><div id="exchangeList"></div></div>
 </section>
 
@@ -202,7 +202,9 @@ function bonusCounts(){
  data.forEach(x=>{
   // 早期予約特典を選択した予約は、通常の形態別特典は付きません。
   if(!x.early && forms[x.form].bonus)c[forms[x.form].bonus]+=x.qty;
-  if(x.form==="REG"&&x.unit&&x.unit!=="OTHER")c["ユニット"+x.unit]=(c["ユニット"+x.unit]||0)+x.qty;
+if(x.form==="REG" && !x.early && x.unit && x.unit!=="OTHER"){
+  c["ユニット"+x.unit]=(c["ユニット"+x.unit]||0)+x.qty;
+}
  });
  return c;
 }
