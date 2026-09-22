@@ -28,6 +28,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 <header><div class="wrap">
 <h1 class="title">Aぇ! group「Emotion」予約・交換管理</h1>
 <div class="sub">予約枚数/形態・特典の不足/特典の交換までまとめて管理</div>
+<div class="sub">※こちらはファンが作成・運営する非公式サイトです。公式とは一切関係ありません。</div>
 <nav>
 <button class="active" data-tab="reserve">予約登録</button>
 <button data-tab="result">集計・不足チェック</button>
@@ -381,7 +382,19 @@ function renderExchange(){
  });
  const sticker=data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0);
  others.forEach(m=>{const key="sticker|"+m;totalAvailable+=sticker;totalRemaining+=remainingQty(key,sticker)});
- h+=`<div class="exchange-summary"><b>🔄 交換残数</b><div class="exchange-summary-grid" style="margin-top:8px"><div class="stat"><b>${totalAvailable}</b><span>交換対象合計</span></div><div class="stat"><b>${totalAvailable-totalRemaining}</b><span>交換済み合計</span></div><div class="stat"><b>${totalRemaining}</b><span>残り合計</span></div></div></div>`;
+h+=`<div class="exchange-summary">
+  <b>🔄 交換残数</b>
+  <div class="exchange-summary-grid" style="margin-top:8px">
+    <div class="stat"><b>${totalAvailable}</b><span>交換対象合計</span></div>
+    <div class="stat"><b>${totalAvailable-totalRemaining}</b><span>交換済み合計</span></div>
+    <div class="stat"><b>${totalRemaining}</b><span>残り合計</span></div>
+  </div>
+  <div class="actions">
+    <button class="btn primary" onclick="saveExchangeImage()">
+      📸 交換残数を画像で保存
+    </button>
+  </div>
+</div>`;
  h+=`<div class="exchange-box"><div class="exchange-title">📸 初回A フォトプロップス</div><div class="exchange-body">
  <div class="small">初回A 1枚につき、4人分が1セット。</div>
  <div class="person-grid" style="margin-top:8px">${members.map(m=>{const key="photo|"+m;const max=s[m].photo;return `<div class="person"><b>${remainingQty(key,max)}</b><span>${m}<br>残り</span></div>`}).join("")}</div>
@@ -405,6 +418,200 @@ function renderExchange(){
  </div></div>`;
  $("exchangeList").innerHTML=h;
 }
+function saveExchangeImage(){
+  const fav=$("favorite").value;
+
+  const colors={
+    "末澤誠也":{
+      bg:"#fff1f1",
+      main:"#d32f2f",
+      sub:"#ffe0e0"
+    },
+    "正門良規":{
+      bg:"#eef5ff",
+      main:"#1976d2",
+      sub:"#dbeafe"
+    },
+    "佐野晶哉":{
+      bg:"#effaf1",
+      main:"#2e8b57",
+      sub:"#dff3e4"
+    },
+    "小島健":{
+      bg:"#f5efff",
+      main:"#7b3fc6",
+      sub:"#e9ddff"
+    }
+  };
+
+  const color=colors[fav];
+
+  const s=memberStock();
+  const others=members.filter(m=>m!==fav);
+  const items=[];
+
+  // フォトプロップス
+  others.forEach(m=>{
+    const key="photo|"+m;
+    const max=s[m].photo;
+    const remain=remainingQty(key,max);
+    if(remain>0){
+      items.push({
+        name:`フォトプロップス（${m}）`,
+        qty:remain
+      });
+    }
+  });
+
+  // ユニットトレカ
+  ["A","B","C"].forEach(u=>{
+    const otherPair=units[u].find(p=>!p.includes(fav));
+
+    if(otherPair){
+      const label=otherPair.join("＆");
+      const available=Math.min(
+        ...otherPair.map(m=>s[m].units[u])
+      );
+      const key="unit"+u+"|"+label;
+      const remain=remainingQty(key,available);
+
+      if(remain>0){
+        items.push({
+          name:`ユニットトレカ${u}（${label}）`,
+          qty:remain
+        });
+      }
+    }
+  });
+
+  // 早期フレークシール
+  const sticker=data
+    .filter(x=>x.early)
+    .reduce((n,x)=>n+x.qty,0);
+
+  others.forEach(m=>{
+    const key="sticker|"+m;
+    const remain=remainingQty(key,sticker);
+
+    if(remain>0){
+      items.push({
+        name:`早期フレークシール（${m}）`,
+        qty:remain
+      });
+    }
+  });
+
+  const width=800;
+  const rowHeight=75;
+  const headerHeight=190;
+  const footerHeight=70;
+  const height=Math.max(
+    500,
+    headerHeight + items.length*rowHeight + footerHeight
+  );
+
+  const canvas=document.createElement("canvas");
+  canvas.width=width;
+  canvas.height=height;
+
+  const ctx=canvas.getContext("2d");
+
+  // 背景
+  ctx.fillStyle=color.bg;
+  ctx.fillRect(0,0,width,height);
+
+  // 上部カラー
+  ctx.fillStyle=color.main;
+  ctx.fillRect(0,0,width,16);
+
+  // タイトル
+  ctx.fillStyle=color.main;
+  ctx.font="bold 38px sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(`私は${fav}担です`,width/2,75);
+
+  ctx.font="bold 26px sans-serif";
+  ctx.fillText("交換に出せるもの",width/2,125);
+
+  // 枠
+  let y=headerHeight;
+
+  if(items.length===0){
+    ctx.fillStyle="#555";
+    ctx.font="bold 25px sans-serif";
+    ctx.fillText(
+      "現在、交換に出せる残数はありません",
+      width/2,
+      y+50
+    );
+  }else{
+    items.forEach(item=>{
+      ctx.fillStyle="#ffffff";
+      ctx.beginPath();
+      ctx.roundRect(45,y,width-90,58,15);
+      ctx.fill();
+
+      ctx.strokeStyle=color.sub;
+      ctx.lineWidth=3;
+      ctx.stroke();
+
+      ctx.textAlign="left";
+      ctx.fillStyle="#333";
+      ctx.font="bold 23px sans-serif";
+      ctx.fillText(item.name,70,y+37);
+
+      ctx.textAlign="right";
+      ctx.fillStyle=color.main;
+      ctx.font="bold 28px sans-serif";
+      ctx.fillText(`${item.qty}枚`,width-70,y+38);
+
+      y+=rowHeight;
+    });
+  }
+
+  // フッター
+  ctx.textAlign="center";
+  ctx.fillStyle="#777";
+  ctx.font="18px sans-serif";
+  ctx.fillText(
+    "Aぇ! group「Emotion」交換管理",
+    width/2,
+    height-30
+  );
+
+  // 画像を画面に表示
+  const image=canvas.toDataURL("image/png");
+
+  const old=document.getElementById("exchangeSavedImage");
+  if(old) old.remove();
+
+  const box=document.createElement("div");
+  box.id="exchangeSavedImage";
+  box.className="card";
+  box.innerHTML=`
+    <h2>📸 交換残数画像</h2>
+    <div class="hint">
+      画像を長押し・右クリックして保存できます。
+    </div>
+    <img
+      src="${image}"
+      style="
+        width:100%;
+        display:block;
+        margin-top:10px;
+        border-radius:12px;
+      "
+    >
+  `;
+
+  $("exchange").appendChild(box);
+
+  box.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+ 
 function render(){
   renderReservations();
   renderResult();
