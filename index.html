@@ -27,7 +27,7 @@ main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);b
 <body>
 <header><div class="wrap">
 <h1 class="title">Aぇ! group「Emotion」予約・交換管理</h1>
-<div class="sub">予約枚数 → 特典・楽曲・映像 → 交換までまとめて管理</div>
+<div class="sub">予約枚数/形態・特典の不足/特典の交換までまとめて管理</div>
 <nav>
 <button class="active" data-tab="reserve">予約登録</button>
 <button data-tab="result">集計・不足チェック</button>
@@ -171,7 +171,7 @@ function updateHint(){
    wrap.classList.toggle("hidden",r.unit!=="OTHER");
    const unit=r.unit==="OTHER"?$("otherUnit").value:r.unit;
    const pairText=units[unit]?units[unit].map(x=>x.join("＆")).join(" ／ "):"";
-   $("bonusHint").innerHTML=`この購入先の特典は <b>ユニットトレカ${unit}</b>。1枚につき<strong>2コンビ分のトレカが1枚ずつ、計2枚</strong>入ります。<br><b>${pairText}</b>`;
+   $("bonusHint").innerHTML=`この購入先の特典は <b>ユニットトレカ${unit}</b>。1枚につき<strong>2ユニット分のトレカが1枚ずつ、計2枚</strong>入ります。<br><b>${pairText}</b>`;
  }else{
    wrap.classList.add("hidden");
    $("bonusHint").innerHTML=`予約先：<b>${esc($("shop").value)}</b>。通常特典：<b>${forms[f].bonus}</b>。${forms[f].price.DVD.toLocaleString()}円（DVD）／${forms[f].price.BR.toLocaleString()}円（Blu-ray）`;
@@ -291,8 +291,8 @@ function renderResult(){
  const unitQty={A:Number(b.ユニットA)||0,B:Number(b.ユニットB)||0,C:Number(b.ユニットC)||0};
  ["A","B","C"].forEach(u=>{
    if(unitQty[u] < 1){
-     const pairText=unitPairs[u].map(x=>`👬 ${esc(x)}`).join(" ／ ");
-     h+=`<div class="alert">👬 <b>ユニットトレカ${u}</b> が足りないよ！<br><span class="small">（${pairText}）</span></div>`;
+     const pairText=unitPairs[u].map(x=>esc(x)).join(" ／ ");
+     h+=`<div class="alert">🎁 <b>ユニットトレカ${u}</b> が足りないよ！<br><span class="small">（${pairText}）</span></div>`;
    }
  });
  if(!data.length) h=`<div class="small">予約を追加すると自動チェックします。</div>`;
@@ -384,7 +384,7 @@ function renderExchange(){
   const unitTitle={A:"👬 通常盤 ユニットトレカA （末澤誠也＆小島健 ／ 佐野晶哉＆正門良規）",B:"👬 通常盤 ユニットトレカB （末澤誠也＆佐野晶哉 ／ 小島健＆正門良規）",C:"👬 通常盤 ユニットトレカC （末澤誠也＆正門良規 ／ 小島健＆佐野晶哉）"}[u];
   h+=`<div class="exchange-box"><div class="exchange-title">${unitTitle}</div><div class="exchange-body">
    <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
-   <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
+   <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>残数：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
    <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b class="${(otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0)>0?"remaining":""}">${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
    ${otherPair?exchangeRows("unit"+u,[otherPair.join("＆")],{[otherPair.join("＆")]:available}):""}
   </div></div>`;
