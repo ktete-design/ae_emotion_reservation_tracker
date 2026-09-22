@@ -380,10 +380,35 @@ function renderExchange(){
    const available=otherPair?Math.min(...otherPair.map(m=>s[m].units[u])):0;
    if(otherPair){const key="unit"+u+"|"+otherPair.join("＆");totalAvailable+=available;totalRemaining+=remainingQty(key,available);}
  });
- const sticker=data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0);
- others.forEach(m=>{const key="sticker|"+m;totalAvailable+=sticker;totalRemaining+=remainingQty(key,sticker)});
-h+=`<div class="exchange-summary"><b>🔄 交換残数</b>
- h+=`<div class="exchange-box"><div class="exchange-title">📸 初回A フォトプロップス</div><div class="exchange-body">
+const sticker=data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0);
+
+others.forEach(m=>{
+  const key="sticker|"+m;
+  totalAvailable+=sticker;
+  totalRemaining+=remainingQty(key,sticker);
+});
+
+h+=`<div class="exchange-summary">
+  <b>🔄 交換残数</b>
+  <div class="exchange-summary-grid" style="margin-top:8px">
+    <div class="stat">
+      <b>${totalAvailable}</b>
+      <span>交換対象合計</span>
+    </div>
+    <div class="stat">
+      <b>${totalAvailable-totalRemaining}</b>
+      <span>交換済み合計</span>
+    </div>
+    <div class="stat">
+      <b>${totalRemaining}</b>
+      <span>残り合計</span>
+    </div>
+  </div>
+</div>`;
+
+h+=`<div class="exchange-box">
+  <div class="exchange-title">📸 初回A フォトプロップス</div>
+  <div class="exchange-body">
  <div class="small">初回A 1枚につき、4人分が1セット。</div>
  <div class="person-grid" style="margin-top:8px">${members.map(m=>{const key="photo|"+m;const max=s[m].photo;return `<div class="person"><b>${remainingQty(key,max)}</b><span>${m}<br>残り</span></div>`}).join("")}</div>
  ${exchangeRows("photo",others,Object.fromEntries(others.map(m=>[m,s[m].photo])))}
