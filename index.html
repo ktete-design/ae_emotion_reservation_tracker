@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e99ab3">
+<title>Aぇ! group「Emotion」予約・交換管理</title>
+<style>
+:root{--pink:#e99ab3;--deep:#a94f69;--light:#fff0f5;--line:#edcbd6;--text:#30262a;--muted:#786a70;--bg:#fffafb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}.wrap{max-width:760px;margin:auto}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#fff,#fff0f5);border-bottom:1px solid var(--line);padding:20px 14px 12px}.title{font-size:22px;font-weight:800;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+nav{display:flex;gap:7px;overflow:auto;margin-top:13px}nav button{border:1px solid var(--line);background:white;color:#765763;border-radius:999px;padding:8px 12px;white-space:nowrap}nav button.active{background:var(--pink);color:white;border-color:var(--pink)}
+main{padding:16px 13px 50px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:13px;box-shadow:0 2px 10px #8d536010}h2{font-size:17px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.grid{grid-template-columns:1fr}}label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}select,input,textarea{width:100%;font:inherit;border:1px solid #ddcbd1;border-radius:10px;padding:10px;background:white;color:var(--text)}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:6px}
+.actions{display:flex;gap:8px;margin-top:12px}.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:700}.primary{background:var(--pink);color:#fff}.secondary{background:var(--light);color:var(--deep)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--light);border-radius:12px;text-align:center;padding:10px}.stat b{display:block;font-size:21px}.stat span{font-size:10px;color:var(--muted)}
+.item{border-top:1px solid #f0e2e6;padding:12px 0;display:flex;justify-content:space-between;gap:10px;align-items:center}.item:first-child{border-top:0}.small{font-size:12px;color:var(--muted)}.qty{font-size:20px;font-weight:800;white-space:nowrap}.tag{display:inline-block;background:#f9e5eb;color:#97546a;padding:3px 7px;border-radius:999px;font-size:10px;margin:2px}
+.alert{padding:11px 12px;border-radius:9px;background:#fff3f6;border-left:4px solid var(--pink);font-size:13px;margin:7px 0}.alert.ok{background:#f0faf3;border-left-color:#79aa8b}.alert.warn{background:#fff8ed;border-left-color:#e1a14a}
+.person-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}@media(max-width:520px){.person-grid{grid-template-columns:repeat(2,1fr)}}.person{background:#fff8fa;border:1px solid var(--line);border-radius:11px;padding:9px;text-align:center}.person b{display:block;font-size:16px}.person span{font-size:11px;color:var(--muted)}
+.exchange-box{border:1px solid var(--line);border-radius:12px;margin:10px 0;overflow:hidden}.exchange-title{background:var(--light);padding:10px 12px;font-weight:800}.exchange-body{padding:10px 12px}.member-row{display:grid;grid-template-columns:1fr 60px 1.3fr;gap:7px;align-items:center;padding:8px 0;border-top:1px solid #f0e2e6;font-size:13px}.member-row:first-child{border-top:0}.pill{font-size:11px;background:#f9e5eb;color:#97546a;border-radius:999px;padding:4px 6px;text-align:center}.checkrow{display:grid;grid-template-columns:25px 1fr 1fr;gap:6px;align-items:center;padding:7px 0;border-top:1px solid #f0e2e6}.checkrow input[type=checkbox]{width:auto}.mini{font-size:11px;padding:6px 7px}.danger{background:#fff0f0;color:#a94452;border:0;border-radius:7px;padding:5px 7px}.hidden{display:none}.footer{font-size:11px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1 class="title">Aぇ! group「Emotion」予約・交換管理</h1>
+<div class="sub">予約枚数 → 特典・楽曲・映像 → 交換までまとめて管理</div>
+<nav>
+<button class="active" data-tab="reserve">予約登録</button>
+<button data-tab="result">集計・不足チェック</button>
+<button data-tab="exchange">交換管理</button>
+</nav></div></header>
+
+<main class="wrap">
+<section id="reserve" class="tab">
+<div class="card">
+<h2>予約を追加</h2>
+<div class="grid">
+<div><label>予約形態</label><select id="form"></select></div>
+<div><label>予約サイト</label><select id="shop"></select></div>
+<div><label>枚数</label><input id="qty" type="number" min="1" value="1"></div>
+<div><label>メモ（任意）</label><input id="memo" placeholder="例：自分用"></div>
+</div>
+<div id="bonusHint" class="hint"></div>
+<div class="actions"><button class="btn primary" id="add">予約を追加</button><button class="btn secondary" id="reset">入力リセット</button></div>
+</div>
+<div class="card"><h2>自分の予約</h2><div id="reservationList"></div></div>
+</section>
+
+<section id="result" class="tab hidden">
+<div class="card"><h2>予約集計</h2><div class="summary">
+<div class="stat"><b id="totalQty">0</b><span>合計枚数</span></div><div class="stat"><b id="formCount">0</b><span>形態数</span></div><div class="stat"><b id="shopCount">0</b><span>購入先数</span></div>
+</div></div>
+<div class="card"><h2>何を何枚買った？</h2><div id="byForm"></div></div>
+<div class="card"><h2>もらえる特典の集計</h2><div id="bonusSummary"></div></div>
+<div class="card"><h2>楽曲・映像・特典チェック</h2><div id="alerts"></div></div>
+</section>
+
+<section id="exchange" class="tab">
+<div class="card">
+<h2>自担を選択</h2>
+<select id="favorite"></select>
+<div class="hint">交換対象は「フォトプロップス」「通常盤ユニットトレカ」「早期予約特典フレークシール」です。自担以外の枚数を自動集計します。</div>
+</div>
+<div class="card"><h2>交換できるもの</h2><div id="exchangeList"></div></div>
+</section>
+
+<div class="card footer">予約情報・交換情報はこの端末のブラウザ（localStorage）に保存します。GitHub Pagesに公開しても、他の人とデータ共有はされません。</div>
+</main>
+
+<script>
+const members=["末澤誠也","小島健","佐野晶哉","正門良規"];
+
+const forms={
+ A:{name:"初回限定盤A",price:2130,bonus:["フォトプロップス"],tracks:["Emotion","この朝は","X'mas FAM!"],video:["Emotion Music Video","Emotion Music Video Making"]},
+ B:{name:"初回限定盤B",price:2130,bonus:["ハブラシ"],tracks:["Emotion","この朝は","White Love Story"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making"]},
+ C:{name:"初回限定盤C",price:2130,bonus:["ラバーバンド"],tracks:["Emotion","この朝は","Mrs.Vampire"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"]},
+ REG:{name:"通常盤",price:1300,bonus:[],tracks:["Emotion","この朝は","Aッ!!!!!!!"],video:[]}
+};
+
+// 画像の通常盤特典。
+// 通常盤は「1形態」だけ。ただし予約サイトによってA/B/Cのユニットトレカが変わる。
+const regularShops={
+ "ユニットトレカA（HMV・Amazon・山野楽器・WonderGOO／新星堂）":{unit:"A",pair:["末澤誠也","小島健"]},
+ "ユニットトレカB（タワレコ・セブンネット・その他全国CDショップ／EC）":{unit:"B",pair:["末澤誠也","佐野晶哉"]},
+ "ユニットトレカC（UNIVERSAL MUSIC STORE・楽天ブックス・TSUTAYA RECORDS）":{unit:"C",pair:["末澤誠也","正門良規"]}
+};
+
+let data=JSON.parse(localStorage.getItem("aeEmotionReservations")||"[]");
+let exchange=JSON.parse(localStorage.getItem("aeEmotionExchange")||"{}");
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function save(){localStorage.setItem("aeEmotionReservations",JSON.stringify(data));localStorage.setItem("aeEmotionExchange",JSON.stringify(exchange));render();}
+function populate(){
+ $("form").innerHTML=Object.entries(forms).map(([k,v])=>`<option value="${k}">${v.name}（${v.price.toLocaleString()}円）</option>`).join("");
+ $("favorite").innerHTML=members.map(m=>`<option>${m}</option>`).join("");
+ updateShops();
+}
+function updateShops(){
+ const f=$("form").value;
+ if(f==="REG"){
+   $("shop").innerHTML=Object.keys(regularShops).map(s=>`<option>${s}</option>`).join("");
+ }else{
+   $("shop").innerHTML=`<option>どこでもOK</option>`;
+ }
+ updateHint();
+}
+function updateHint(){
+ const f=$("form").value;
+ if(f==="REG"){
+   const r=regularShops[$("shop").value];
+   $("bonusHint").innerHTML=`この予約では <b>ユニットトレカ${r.unit}</b>（${r.pair.join("＆")}）が1セット＝2枚つきます。<br>※通常盤1枚につき、選択したサイトのユニットトレカ1セットとして集計します。`;
+ }else{
+   $("bonusHint").textContent=`この形態の通常特典：${forms[f].bonus.join("、")}。`;
+ }
+}
+function addReservation(){
+ const f=$("form").value,q=Math.max(1,parseInt($("qty").value||1));
+ data.push({id:Date.now()+Math.random(),form:f,shop:$("shop").value,qty:q,memo:$("memo").value.trim()});
+ $("qty").value=1;$("memo").value="";save();
+}
+function removeReservation(id){data=data.filter(x=>x.id!==id);save()}
+function total(){return data.reduce((s,x)=>s+x.qty,0)}
+function aggregateForms(){let r={};data.forEach(x=>r[x.form]=(r[x.form]||0)+x.qty);return r}
+function trackCounts(){let c={};data.forEach(x=>forms[x.form].tracks.forEach(t=>c[t]=(c[t]||0)+x.qty));return c}
+function bonusCounts(){
+ let c={};
+ data.forEach(x=>{
+   forms[x.form].bonus.forEach(b=>c[b]=(c[b]||0)+x.qty);
+   if(x.form==="REG"){
+     const r=regularShops[x.shop]; const key="ユニットトレカ"+r.unit;
+     c[key]=(c[key]||0)+x.qty;
+   }
+ });
+ return c;
+}
+function memberStock(){
+ const c={};members.forEach(m=>c[m]={photo:0,sticker:0,A:0,B:0,C:0});
+ data.forEach(x=>{
+   if(x.form==="A")members.forEach(m=>c[m].photo+=x.qty);
+   // 早期予約特典は予約時にON/OFFするのではなく、登録した予約枚数を「早期予約対象」として扱う。
+   // 予約後の画面で「早期予約特典枚数」を別管理できるよう、earlyQtyを使用。
+   if(x.earlyQty)members.forEach(m=>c[m].sticker+=x.earlyQty);
+   if(x.form==="REG"){
+     const u=regularShops[x.shop].unit;
+     const pair=regularShops[x.shop].pair;
+     pair.forEach(m=>c[m][u]+=x.qty);
+   }
+ });
+ return c;
+}
+function renderReservations(){
+ $("reservationList").innerHTML=data.length?data.map(x=>{
+   let bonus=x.form==="REG"?regularShops[x.shop].unit==="A"?"ユニットトレカA":regularShops[x.shop].unit==="B"?"ユニットトレカB":"ユニットトレカC":forms[x.form].bonus.join("・");
+   return `<div class="item"><div><b>${forms[x.form].name} ×${x.qty}</b><div class="small">${esc(x.shop)}${x.memo?` ・ ${esc(x.memo)}`:""}</div><div>${bonus?`<span class="tag">${bonus}</span>`:""}</div></div><button class="danger" onclick="removeReservation(${x.id})">削除</button></div>`
+ }).join(""):`<div class="small">まだ予約がありません。</div>`;
+}
+function renderResult(){
+ const agg=aggregateForms();$("totalQty").textContent=total();$("formCount").textContent=Object.keys(agg).length;$("shopCount").textContent=[...new Set(data.map(x=>x.shop))].length;
+ $("byForm").innerHTML=Object.keys(agg).length?Object.entries(agg).map(([f,q])=>`<div class="item"><div><b>${forms[f].name}</b><div>${forms[f].tracks.map(t=>`<span class="tag">${t}</span>`).join("")}</div></div><div class="qty">×${q}</div></div>`).join(""):"<div class=small>予約を追加してください。</div>";
+ const b=bonusCounts();
+ $("bonusSummary").innerHTML=[
+  ["フォトプロップス",b["フォトプロップス"]||0],
+  ["ハブラシ",b["ハブラシ"]||0],
+  ["ラバーバンド",b["ラバーバンド"]||0],
+  ["ユニットトレカA",b["ユニットトレカA"]||0],
+  ["ユニットトレカB",b["ユニットトレカB"]||0],
+  ["ユニットトレカC",b["ユニットトレカC"]||0]
+ ].map(x=>`<div class="item"><div>${x[0]}</div><div class="qty">×${x[1]}</div></div>`).join("");
+ const tracks=trackCounts(),need=["Emotion","この朝は","X'mas FAM!","White Love Story","Mrs.Vampire","Aッ!!!!!!!"];
+ let h="";need.forEach(t=>{if(!tracks[t])h+=`<div class="alert warn">🎵 <b>${t}</b> が聴けないよ！</div>`});
+ const videos=["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"];
+ videos.forEach(v=>{if(!data.some(x=>forms[x.form].video.includes(v)))h+=`<div class="alert warn">🎬 <b>${v}</b> が見れないよ！</div>`});
+ ["フォトプロップス","ハブラシ","ラバーバンド"].forEach(bn=>{if(!b[bn])h+=`<div class="alert">🎁 <b>${bn}</b> が足りないよ！</div>`});
+ if(!data.length)h=`<div class="small">予約を追加すると自動チェックします。</div>`;
+ else if(!h)h=`<div class="alert ok">✨ 現在の予約で、登録されている楽曲・映像・初回盤特典をカバーしています。</div>`;
+ $("alerts").innerHTML=h;
+}
+function renderExchange(){
+ const fav=$("favorite").value, s=memberStock();
+ let h="";
+ // フォトプロップス
+ h+=`<div class="exchange-box"><div class="exchange-title">📸 フォトプロップス</div><div class="exchange-body">
+ <div class="small">初回A 1枚につき4人分×1セット</div>
+ <div class="person-grid">${members.map(m=>`<div class="person"><b>${s[m].photo}</b><span>${m}</span>${m!==fav?`<div class="small">交換可能</div>`:`<div class="small">自担</div>`}</div>`).join("")}</div>
+ ${exchangeSection("photo",members.filter(m=>m!==fav),s)}
+ </div></div>`;
+ // 通常盤トレカ
+ ["A","B","C"].forEach(u=>{
+   const r=Object.values(regularShops).find(x=>x.unit===u);const other=r.pair.find(m=>m!==fav);
+   const own=r.pair.includes(fav);
+   h+=`<div class="exchange-box"><div class="exchange-title">🎴 ユニットトレカ${u} <span class="small">（${r.pair.join("＆")}）</span></div><div class="exchange-body"><div class="small">通常盤1枚につき1セット（2枚）</div><div class="item"><div>${own?`自担：${fav} ＋ ${other}`:`このユニットに自担がいないため交換管理対象外`}</div><div class="qty">×${s[r.pair[0]][u]}</div></div>${own?exchangeSection("unit"+u,[other],s,r.pair[0],u):""}</div></div>`;
+ });
+ // フレークシール：現時点で早期予約対象枚数が登録されていなければ、予約枚数＝対象枚数として扱えるように別UIを設ける
+ const early=earlyTotal();
+ h+=`<div class="exchange-box"><div class="exchange-title">🩷 早期予約特典 フレークシール</div><div class="exchange-body">
+ <div class="grid"><div><label>早期予約した枚数</label><input id="earlyQty" type="number" min="0" value="${early}" onchange="setEarly(this.value)"></div><div class="hint">1枚につき4人分×1セット。予約期間内に予約した枚数を入力してください。</div></div>
+ <div class="person-grid" style="margin-top:10px">${members.map(m=>`<div class="person"><b>${early}</b><span>${m}</span>${m!==fav?`<div class="small">交換可能</div>`:`<div class="small">自担</div>`}</div>`).join("")}</div>
+ ${exchangeSection("sticker",members.filter(m=>m!==fav),Object.fromEntries(members.map(m=>[m,{sticker:early}])))} </div></div>`;
+ $("exchangeList").innerHTML=h;
+}
+function exchangeSection(type,people,stock,base="",unit=""){
+ if(!people.length)return "";
+ let h='<div style="margin-top:8px"><b class="small">交換管理</b>';
+ people.forEach(m=>{
+   const key=type+"|"+m+"|"+base; const e=exchange[key]||{done:0,note:""}; const max=type==="photo"?stock[m].photo:type==="sticker"?stock[m].sticker:stock[base][unit]||0;
+   h+=`<div class="checkrow"><input type="checkbox" ${e.done?"checked":""} onchange="toggle('${key}',${max})"><span>${m}（交換可能 ${max}）</span><input placeholder="誰と交換？" value="${esc(e.note)}" oninput="note('${key}',this.value)"></div>`;
+ });
+ return h+"</div>";
+}
+function earlyTotal(){return data.reduce((n,x)=>n+(x.earlyQty||0),0)}
+function setEarly(v){const n=Math.max(0,parseInt(v||0));localStorage.setItem("aeEmotionEarlyQty",String(n));data.forEach(x=>{delete x.earlyQty});save()}
+function toggle(k,max){exchange[k]={...(exchange[k]||{}),done:!(exchange[k]?.done)};save()}
+function note(k,v){exchange[k]={...(exchange[k]||{}),note:v};localStorage.setItem("aeEmotionExchange",JSON.stringify(exchange))}
+function render(){renderReservations();renderResult();renderExchange()}
+$("form").onchange=updateShops;$("shop").onchange=updateHint;$("add").onclick=()=>{
+ const f=$("form").value,q=Math.max(1,parseInt($("qty").value||1));
+ data.push({id:Date.now()+Math.random(),form:f,shop:$("shop").value,qty:q,memo:$("memo").value.trim()});
+ $("qty").value=1;$("memo").value="";save();
+};$("reset").onclick=()=>{$("qty").value=1;$("memo").value=""};$("favorite").onchange=renderExchange;
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");render()});
+populate();render();
+</script>
+</body>
+</html>
