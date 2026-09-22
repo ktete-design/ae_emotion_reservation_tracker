@@ -203,7 +203,8 @@ function trackCounts(){let c={};data.forEach(x=>(forms[x.form]?.tracks||[]).forE
 function bonusCounts(){
  let c={"フォトプロップス":0,"ハブラシ":0,"ラバーバンド":0,"ユニットA":0,"ユニットB":0,"ユニットC":0};
  data.forEach(x=>{
-  if(forms[x.form].bonus)c[forms[x.form].bonus]+=x.qty;
+  // 早期予約特典を選択した予約は、通常の形態別特典は付きません。
+  if(!x.early && forms[x.form].bonus)c[forms[x.form].bonus]+=x.qty;
   if(x.form==="REG"&&x.unit&&x.unit!=="OTHER")c["ユニット"+x.unit]=(c["ユニット"+x.unit]||0)+x.qty;
  });
  return c;
@@ -211,7 +212,8 @@ function bonusCounts(){
 function memberStock(){
  let c={};members.forEach(m=>c[m]={photo:0,sticker:0,units:{A:0,B:0,C:0}});
  data.forEach(x=>{
-  if(x.form==="A")members.forEach(m=>c[m].photo+=x.qty);
+  // A盤のフォトプロップスは、早期予約特典対象なら付きません。
+  if(x.form==="A" && !x.early)members.forEach(m=>c[m].photo+=x.qty);
   if(x.early)members.forEach(m=>c[m].sticker+=x.qty);
   if(x.form==="REG"&&units[x.unit]){
    units[x.unit].forEach(pair=>pair.forEach(m=>c[m].units[x.unit]+=x.qty));
@@ -221,7 +223,7 @@ function memberStock(){
 }
 function renderReservations(){
  $("reservationList").innerHTML=data.length?data.map(x=>{
-  let b=x.form==="REG"?(x.unit&&x.unit!=="OTHER"?`ユニットトレカ${x.unit}`:"特典未判定"):forms[x.form].bonus;
+  let b=x.early?"早期予約特典：フレークシール":(x.form==="REG"?(x.unit&&x.unit!=="OTHER"?`ユニットトレカ${x.unit}`:"特典未判定"):forms[x.form].bonus);
   return `<div class="item"><div><b>${forms[x.form]?.name||x.form} ×${x.qty}</b><div class="small">${esc(x.edition)} ・ ${esc(x.shop)}${x.early?" ・ 🩷早期特典":""}${x.memo?" ・ "+esc(x.memo):""}</div><div class="price">¥${((Number(forms[x.form]?.price?.[x.edition])||0)*x.qty).toLocaleString()}</div><span class="tag">${b}</span></div><button class="danger" onclick="removeReservation(${x.id})">削除</button></div>`
  }).join(""):`<div class="small">まだ予約がありません。</div>`;
 }
