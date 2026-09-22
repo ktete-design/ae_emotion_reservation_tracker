@@ -143,9 +143,16 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&
 
 function save(){localStorage.setItem("aeEmotionReservations",JSON.stringify(data));localStorage.setItem("aeEmotionExchange",JSON.stringify(exchange));localStorage.setItem("aeEmotionExchangeRecords",JSON.stringify(exchangeRecords));render();}
 function populate(){
- $("form").innerHTML=Object.entries(forms).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
- $("favorite").innerHTML=members.map(m=>`<option>${m}</option>`).join("");
- updateEdition();updateShops();
+  $("form").innerHTML=Object.entries(forms).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+  $("favorite").innerHTML=members.map(m=>`<option>${m}</option>`).join("");
+
+  const savedFavorite=localStorage.getItem("aeEmotionFavorite");
+  if(savedFavorite && members.includes(savedFavorite)){
+    $("favorite").value=savedFavorite;
+  }
+
+  updateEdition();
+  updateShops();
 }
 function updateEdition(){
  const f=$("form").value;
@@ -406,7 +413,10 @@ function render(){
 
 $("form").onchange=()=>{updateEdition();updateShops()};$("shop").onchange=updateHint;$("otherUnit").onchange=updateHint;
 $("add").onclick=addReservation;$("reset").onclick=()=>{$("qty").value=1;$("memo").value="";$("early").checked=false};
-$("favorite").onchange=renderExchange;
+$("favorite").onchange=()=>{
+  localStorage.setItem("aeEmotionFavorite",$("favorite").value);
+  renderExchange();
+};
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");render()});
 localStorage.setItem("aeEmotionReservations",JSON.stringify(data));
 localStorage.setItem("aeEmotionExchange",JSON.stringify(exchange));
