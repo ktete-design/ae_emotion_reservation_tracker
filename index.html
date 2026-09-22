@@ -101,8 +101,7 @@ const units={
 };
 
 const forms={
- A:{name:"初回限定盤A",price:{DVD:1800,BR:2130},bonus:"フォトプロップス",tracks:["Emotion","この朝は","X'mas FAM!"],video:["Emotion Music Video","Emotion Music Video Making"]},B:{name:"初回限定盤B",price:{DVD:1800,BR:2130},bonus:"ハブラシ",tracks:["Emotion","この朝は","White Love Story"],video:["「この朝は」 Music Video","「この朝は」Music Video Making"]},C:{name:"初回限定盤C",price:{DVD:1800,BR:2130},bonus:"ラバーバンド",tracks:["Emotion","この朝は","Mrs.Vampire"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"]},
- REG:{name:"通常盤",price:{CD:1300},bonus:null,tracks:["Emotion","この朝は","Aッ!!!!!!!"],video:[]}
+ A:{name:"初回限定盤A",price:{DVD:1800,BR:2130},bonus:"フォトプロップス",tracks:["Emotion","この朝は","X'mas FAM!"],video:["Emotion Music Video","Emotion Music Video Making"]},B:{name:"初回限定盤B",price:{DVD:1800,BR:2130},bonus:"ハブラシ",tracks:["Emotion","この朝は","White Love Story"],video:["「この朝は」 Music Video","「この朝は」Music Video Making"]},C:{name:"初回限定盤C",price:{DVD:1800,BR:2130},bonus:"ラバーバンド",tracks:["Emotion","この朝は","Mrs.Vampire"],video:["未完成なプロフィールを紡げ","「Emotion」Photoshoot Making"]}, REG:{name:"通常盤",price:{CD:1300},bonus:null,tracks:["Emotion","この朝は","Aッ!!!!!!!"],video:[]}
 };
 
 function safeJSON(key, fallback){try{const v=JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));return v}catch(e){return fallback}}
@@ -249,13 +248,51 @@ function renderResult(){
  : `<div class="small">予約を追加してください。</div>`;
  const b=bonusCounts();
  $("bonusSummary").innerHTML=[["フォトプロップス",b.フォトプロップス],["ハブラシ",b.ハブラシ],["ラバーバンド",b.ラバーバンド],["ユニットトレカA",b.ユニットA],["ユニットトレカB",b.ユニットB],["ユニットトレカC",b.ユニットC],["早期フレークシール",data.filter(x=>x.early).reduce((n,x)=>n+x.qty,0)]].map(x=>`<div class="item"><div>${x[0]}</div><div class="qty">×${x[1]}</div></div>`).join("");
- const tracks=trackCounts(),need=["Emotion","この朝は","X'mas FAM!","White Love Story","Mrs.Vampire","Aッ!!!!!!!"];
- let h="";need.forEach(t=>{if(!tracks[t])h+=`<div class="alert warn">🎵 <b>${t}</b> が聴けないよ！</div>`});
- const videos=["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"];
- videos.forEach(v=>{if(!data.some(x=>forms[x.form].video.includes(v)))h+=`<div class="alert warn">🎬 <b>${v}</b> が見れないよ！</div>`});
- ["フォトプロップス","ハブラシ","ラバーバンド"].forEach(bn=>{if(!b[bn])h+=`<div class="alert">🎁 <b>${bn}</b> が足りないよ！</div>`});
- if(!data.length)h=`<div class="small">予約を追加すると自動チェックします。</div>`;
- else if(!h)h=`<div class="alert ok">✨ 現在の予約で、登録されている楽曲・映像・初回盤特典をカバーしています。</div>`;
+ const tracks=trackCounts();
+ const need=["Emotion","この朝は","X'mas FAM!","White Love Story","Mrs.Vampire","Aッ!!!!!!!"];
+ let h="";
+ need.forEach(t=>{
+   if(!tracks[t]) h+=`<div class="alert warn">🎵 <b>${esc(t)}</b> が聴けないよ！</div>`;
+ });
+ const videoChecks=[
+   {key:"Emotion Music Video",label:"Emotion Music Video"},
+   {key:"Emotion Music Video Making",label:"Emotion Music Video Making"},
+   {key:"この朝は Music Video",label:"「この朝は」 Music Video"},
+   {key:"この朝は Music Video Making",label:"「この朝は」Music Video Making"},
+   {key:"未完成なプロフィールを紡げ",label:"未完成なプロフィールを紡げ"},
+   {key:"「Emotion」Photoshoot Making",label:"「Emotion」Photoshoot Making"}
+ ];
+ const normalizedVideos=[];
+ data.forEach(x=>{
+   const list=(forms[x.form]&&forms[x.form].video)||[];
+   list.forEach(v=>{
+     let k=v;
+     if(k==="「この朝は」 Music Video" || k==="この朝は Music Video") k="この朝は Music Video";
+     if(k==="「この朝は」Music Video Making" || k==="この朝は Music Video Making") k="この朝は Music Video Making";
+     normalizedVideos.push(k);
+   });
+ });
+ videoChecks.forEach(v=>{
+   if(!normalizedVideos.includes(v.key))
+     h+=`<div class="alert warn">🎬 <b>${esc(v.label)}</b> が見れないよ！</div>`;
+ });
+ ["フォトプロップス","ハブラシ","ラバーバンド"].forEach(bn=>{
+   if(!b[bn]) h+=`<div class="alert">🎁 <b>${esc(bn)}</b> が足りないよ！</div>`;
+ });
+ const unitPairs={
+   A:["末澤誠也＆小島健","佐野晶哉＆正門良規"],
+   B:["末澤誠也＆佐野晶哉","小島健＆正門良規"],
+   C:["末澤誠也＆正門良規","小島健＆佐野晶哉"]
+ };
+ const unitQty={A:Number(b.ユニットA)||0,B:Number(b.ユニットB)||0,C:Number(b.ユニットC)||0};
+ ["A","B","C"].forEach(u=>{
+   if(unitQty[u] < 1){
+     const pairText=unitPairs[u].map(x=>`👬 ${esc(x)}`).join(" ／ ");
+     h+=`<div class="alert">👬 <b>ユニットトレカ${u}</b> が足りないよ！<br><span class="small">（${pairText}）</span></div>`;
+   }
+ });
+ if(!data.length) h=`<div class="small">予約を追加すると自動チェックします。</div>`;
+ else if(!h) h=`<div class="alert ok">✨ 現在の予約で、登録されている楽曲・映像・初回盤特典・ユニットトレカをカバーしています。</div>`;
  $("alerts").innerHTML=h;
 }
 function recordsFor(key){return Array.isArray(exchangeRecords[key])?exchangeRecords[key]:[]}
