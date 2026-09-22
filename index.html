@@ -101,9 +101,7 @@ const units={
 };
 
 const forms={
- A:{name:"初回限定盤A",price:{DVD:1800,BR:2130},bonus:"フォトプロップス",tracks:["Emotion","この朝は","X'mas FAM!"],video:["Emotion Music Video","Emotion Music Video Making"]},
- B:{name:"初回限定盤B",price:{DVD:1800,BR:2130},bonus:"ハブラシ",tracks:["Emotion","この朝は","White Love Story"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making"]},
- C:{name:"初回限定盤C",price:{DVD:1800,BR:2130},bonus:"ラバーバンド",tracks:["Emotion","この朝は","Mrs.Vampire"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"]},
+ A:{name:"初回限定盤A",price:{DVD:1800,BR:2130},bonus:"フォトプロップス",tracks:["Emotion","この朝は","X'mas FAM!"],video:["Emotion Music Video","Emotion Music Video Making"]},B:{name:"初回限定盤B",price:{DVD:1800,BR:2130},bonus:"ハブラシ",tracks:["Emotion","この朝は","White Love Story"],video:["「この朝は」 Music Video","「この朝は」Music Video Making"]},C:{name:"初回限定盤C",price:{DVD:1800,BR:2130},bonus:"ラバーバンド",tracks:["Emotion","この朝は","Mrs.Vampire"],video:["Emotion Music Video","Emotion Music Video Making","この朝は Music Video","この朝は Music Video Making","未完成なプロフィールを紡げ","Emotion Photoshoot Making"]},
  REG:{name:"通常盤",price:{CD:1300},bonus:null,tracks:["Emotion","この朝は","Aッ!!!!!!!"],video:[]}
 };
 
@@ -208,6 +206,19 @@ function bonusCounts(){
   if(x.form==="REG"&&x.unit&&x.unit!=="OTHER")c["ユニット"+x.unit]=(c["ユニット"+x.unit]||0)+x.qty;
  });
  return c;
+}
+
+function unitShortage(stock, fav){
+  const out=[];
+  ["A","B","C"].forEach(u=>{
+    const pairs=units[u]||[];
+    pairs.forEach(pair=>{
+      const label=pair.join("＆");
+      const count=pair.some(m=>m===fav) ? 0 : (stock["トレカ_"+label]||0);
+      if(count<=0) out.push({unit:u,label,count:0});
+    });
+  });
+  return out;
 }
 function memberStock(){
  let c={};members.forEach(m=>c[m]={photo:0,sticker:0,units:{A:0,B:0,C:0}});
@@ -331,8 +342,8 @@ function renderExchange(){
   const available=otherPair?Math.min(...otherPair.map(m=>s[m].units[u])):0;
   h+=`<div class="exchange-box"><div class="exchange-title">👬 ユニットトレカ${u}</div><div class="exchange-body">
    <div class="small">${units[u].map(p=>p.join("＆")).join(" ／ ")} の2コンビが各1枚入り。</div>
-   <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>交換に出せる：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
-   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>交換に出せる残数：<b>${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
+   <div class="item"><div>自担入り：<b>${pair?pair.join("＆"):"対象外"}</b><br>：${pair?Math.min(...pair.map(m=>s[m].units[u])):0}枚</div></div>
+   <div class="item"><div>自担なし：<b>${otherPair?otherPair.join("＆"):"-"}</b><br>残数：<b>${otherPair?remainingQty("unit"+u+"|"+otherPair.join("＆"),available):0}枚</b></div></div>
    ${otherPair?exchangeRows("unit"+u,[otherPair.join("＆")],{[otherPair.join("＆")]:available}):""}
   </div></div>`;
  });
